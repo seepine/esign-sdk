@@ -2,18 +2,16 @@ package com.seepine.esign.model.sign.account;
 
 import cn.hutool.http.Method;
 import com.seepine.esign.common.http.Request;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
- * 悟空API个人账户创建
+ * 创建个人账号
  *
- * @author 澄泓
+ * @author seepine
  */
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class CreatePersonReq extends Request {
   private String thirdPartyUserId;
   private String name;

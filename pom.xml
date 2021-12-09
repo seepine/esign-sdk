@@ -6,7 +6,7 @@
 
     <groupId>com.seepine</groupId>
     <artifactId>esign-sdk</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
 
     <name>esign-sdk</name>
     <url>https://github.com/seepine/esign-sdk</url>
@@ -59,13 +59,7 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.78</version>
         </dependency>
-        <dependency>
-            <groupId>com.seepine</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>1.0.0</version>
-        </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <!-- doc plugin,Maven API文档生成插件-->

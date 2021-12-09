@@ -1,11 +1,8 @@
 package com.seepine.esign;
 
-import cn.hutool.core.io.FastByteArrayOutputStream;
-import cn.hutool.core.io.IoUtil;
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
-import cn.hutool.http.HttpUtil;
-import cn.hutool.http.Method;
+import cn.hutool.core.net.url.UrlBuilder;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -15,19 +12,8 @@ import com.seepine.esign.common.exception.DefineException;
 import com.seepine.esign.common.http.Request;
 import com.seepine.esign.common.http.Response;
 import com.seepine.esign.common.util.Encryption;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -127,65 +113,27 @@ public class SignTemplate {
     return header;
   }
 
-  @Deprecated
-  public boolean upload2(String url, ByteArrayOutputStream outputStream) throws DefineException {
-    HttpRequest request =
-        HttpRequest.put(url)
-            .header("Content-MD5", Encryption.md5AndBase64(outputStream))
-            .header("Content-Type", HeaderConstant.CONTENTTYPE_PDF.value())
-            .body(outputStream.toByteArray());
-    HttpResponse res = request.execute();
-    System.out.println(res);
-    return true;
-  }
-
   public boolean upload(String url, ByteArrayOutputStream outputStream) throws DefineException {
-    ByteArrayInputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-    FastByteArrayOutputStream os = new FastByteArrayOutputStream();
-    IoUtil.copy(is, os, outputStream.size());
-    return upload(url, os);
-  }
-
-  public boolean upload(String url, FastByteArrayOutputStream outputStream) throws DefineException {
-    String errMsg;
-    HttpRequestBase baseReq = new HttpPut(url);
-    ((HttpEntityEnclosingRequest) baseReq)
-        .setEntity(new ByteArrayEntity(outputStream.toByteArray()));
-    baseReq.addHeader("Content-MD5", Encryption.md5AndBase64(outputStream));
-    baseReq.addHeader("Content-Type", HeaderConstant.CONTENTTYPE_PDF.value());
-    CloseableHttpClient httpClient = HttpClients.custom().build();
-    CloseableHttpResponse res;
-    try {
-      res = httpClient.execute(baseReq);
-      int status = res.getStatusLine().getStatusCode();
-      HttpEntity httpEntity = res.getEntity();
-      String resBody;
-      if (isDev) {
-        System.out.println("Response Status:" + status);
-      }
-      if (httpEntity != null) {
-        resBody = EntityUtils.toString(httpEntity, "utf-8");
-        if (resBody != null) {
-          if (status != 200) {
-            errMsg = resBody;
-          } else if (resBody.contains("成功")) {
-            if (isDev) {
-              System.out.println("Response Body: ");
-              System.out.println(resBody);
-            }
-            return true;
-          } else {
-            errMsg = resBody;
-          }
-        } else {
-          errMsg = "获取返回数据失败";
-        }
-      } else {
-        errMsg = "获取返回数据失败";
-      }
-    } catch (IOException e) {
-      throw new DefineException("上传文件失败");
+    HttpRequest request =
+        new HttpRequest(UrlBuilder.ofHttpWithoutEncode(url))
+            .method(Method.PUT)
+            .header("Content-MD5", Encryption.md5AndBase64(outputStream))
+            .header("Content-Type", HeaderConstant.CONTENTTYPE_PDF.value());
+    if (isDev) {
+      System.out.println(request);
     }
-    throw new DefineException(errMsg);
+    HttpResponse res = request.body(outputStream.toByteArray()).execute();
+    if (isDev) {
+      System.out.println("Response Body: ");
+      System.out.println(res.body());
+      System.out.println();
+    }
+    if (res.getStatus() != HttpStatus.HTTP_OK) {
+      return false;
+    }
+    if (StrUtil.isBlank(res.body())) {
+      return false;
+    }
+    return res.body().contains("成功");
   }
 }

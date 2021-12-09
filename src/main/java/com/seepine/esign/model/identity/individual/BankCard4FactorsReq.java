@@ -4,18 +4,16 @@ import cn.hutool.http.Method;
 import com.seepine.esign.common.enums.CertType;
 import com.seepine.esign.common.enums.Grade;
 import com.seepine.esign.common.http.Request;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 发起银行4要素认证
  *
  * @author seepine
  */
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class BankCard4FactorsReq extends Request {
   /** 实名认证 */
   String name;

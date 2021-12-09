@@ -2,14 +2,12 @@ package com.seepine.esign.model.sign.template;
 
 import cn.hutool.http.Method;
 import com.seepine.esign.common.http.Request;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /** @author seepine */
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class DocTemplatesReq extends Request {
   String templateId;
 

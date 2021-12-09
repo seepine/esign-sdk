@@ -2,14 +2,16 @@ package com.seepine.esign.model.sign.account;
 
 import cn.hutool.http.Method;
 import com.seepine.esign.common.http.Request;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-/** @author seepine */
-@Getter
-@Setter
-@ToString
+/**
+ * 创建企业账号
+ *
+ * @author seepine
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class CreateOrganizationReq extends Request {
   private String thirdPartyUserId;
   private String name;

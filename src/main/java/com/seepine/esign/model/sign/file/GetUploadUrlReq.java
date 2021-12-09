@@ -6,9 +6,8 @@ import com.seepine.esign.common.enums.HeaderConstant;
 import com.seepine.esign.common.exception.DefineException;
 import com.seepine.esign.common.http.Request;
 import com.seepine.esign.common.util.Encryption;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.ByteArrayOutputStream;
 
@@ -17,9 +16,8 @@ import java.io.ByteArrayOutputStream;
  *
  * @author seepine
  */
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class GetUploadUrlReq extends Request {
   private String contentMd5;
   private String contentType = HeaderConstant.CONTENTTYPE_PDF.value();

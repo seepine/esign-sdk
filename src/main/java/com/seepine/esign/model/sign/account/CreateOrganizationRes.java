@@ -1,12 +1,13 @@
 package com.seepine.esign.model.sign.account;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
+/** @author seepine */
 @Getter
-@Setter
 @ToString
+@AllArgsConstructor
 public class CreateOrganizationRes {
   private String orgId;
 }
