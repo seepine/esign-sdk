@@ -13,6 +13,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class OcrIdCardReq extends Request {
+  private static final String prefix = ";base64,";
   /**
    * 信息面
    *
@@ -29,8 +30,18 @@ public class OcrIdCardReq extends Request {
   String emblemImg;
 
   public OcrIdCardReq(String infoImg, String emblemImg) {
-    this.infoImg = infoImg;
-    this.emblemImg = emblemImg;
+    this.infoImg = filterBase64Header(infoImg);
+    this.emblemImg = filterBase64Header(emblemImg);
+  }
+
+  public String filterBase64Header(String str) {
+    if (str == null) {
+      return null;
+    }
+    if (str.startsWith("data:") && str.indexOf(prefix) > 0) {
+      return str.substring(str.indexOf(prefix) + prefix.length());
+    }
+    return str;
   }
 
   @Override
