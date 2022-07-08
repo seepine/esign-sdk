@@ -3,50 +3,54 @@ package com.seepine.esign;
 import cn.hutool.core.net.url.UrlBuilder;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.*;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.seepine.esign.common.enums.ApiEnum;
 import com.seepine.esign.common.enums.HeaderConstant;
 import com.seepine.esign.common.exception.DefineException;
 import com.seepine.esign.common.http.Request;
 import com.seepine.esign.common.http.Response;
 import com.seepine.esign.common.util.Encryption;
+import com.seepine.esign.interfaces.LogOut;
+import com.seepine.json.Json;
+import com.seepine.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-/** @author seepine */
+/**
+ * @author seepine
+ */
+@Slf4j
 public class SignTemplate {
   private final String host;
   private final String appId;
   private final String appSecret;
-  private boolean isDev = false;
+  LogOut logOut;
 
   public SignTemplate(String appId, String appSecret) {
     this.appId = appId;
     this.appSecret = appSecret;
     this.host = ApiEnum.FORMAL.url;
+    Json.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
   }
 
   public SignTemplate(String appId, String appSecret, boolean isSandBox) {
     this.appId = appId;
     this.appSecret = appSecret;
     this.host = isSandBox ? ApiEnum.SANDBOX.url : ApiEnum.FORMAL.url;
-    this.isDev = isSandBox;
+    Json.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
   }
 
-  public SignTemplate(String appId, String appSecret, boolean isSandBox, boolean isDev) {
-    this.appId = appId;
-    this.appSecret = appSecret;
-    this.host = isSandBox ? ApiEnum.SANDBOX.url : ApiEnum.FORMAL.url;
-    this.isDev = isDev;
+  public SignTemplate logOut(LogOut logOut) {
+    this.logOut = logOut;
+    return this;
   }
 
   public <T> Response<T> execute(Request request, Class<T> tClass) throws DefineException {
     request.build();
-    String paramJson = JSON.toJSONString(request);
+    String paramJson = Json.toJson(request);
     // 对body体做md5摘要
     String contentMd5 = Encryption.doContentMd5(paramJson);
     // get和delete方式请求不能携带body体
@@ -67,36 +71,55 @@ public class SignTemplate {
 
     // 整体做sha256签名
     String reqSignature = Encryption.doSignatureBase64(message, appSecret);
+    String url = host + request.getUrl();
     HttpRequest httpRequest =
-        HttpUtil.createRequest(request.getMethod(), host + request.getUrl())
+        HttpUtil.createRequest(request.getMethod(), url)
             .headerMap(headers(contentMd5, reqSignature), true)
             .body(paramJson);
 
     HttpResponse res = httpRequest.execute();
 
-    if (isDev) {
-      System.out.println(httpRequest);
-      System.out.println("Response Body: ");
-      System.out.println(res.body());
-      System.out.println();
-    }
     Response<T> response;
-    try {
-      response = JSON.parseObject(res.body(), new TypeReference<Response<T>>(tClass) {});
-      if (response == null) {
-        throw new Exception();
+    //    try {
+    //      if (res == null) {
+    //        throw new Exception();
+    //      }
+    //      response = Json.parse(res.body(), new TypeReference<Response<T>>() {});
+    //      if (response == null) {
+    //        throw new Exception();
+    //      }
+    //      if (response.getData() instanceof LinkedHashMap) {
+    //        throw new Exception("识别成了linkedHashMap");
+    //      }
+    //    } catch (Exception ignore) {
+    JsonObject jsonObject = new JsonObject();
+    response = new Response<T>() {};
+    if (res != null) {
+      try {
+        jsonObject = Json.parseObj(res.body());
+        response.setBody(res.body());
+      } catch (Exception ignore) {
       }
-    } catch (Exception ignore) {
-      JSONObject jsonObject = JSON.parseObject(res.body());
-      response = new Response<T>() {};
-      response.setBody(res.body());
-      response.setCode(jsonObject.containsKey("code") ? jsonObject.getString("code") : null);
-      response.setMessage(
-          jsonObject.containsKey("message") ? jsonObject.getString("message") : null);
-      response.setStatus(jsonObject.containsKey("status") ? jsonObject.getInteger("status") : -1);
-      response.setData(
-          JSON.parseObject(
-              jsonObject.containsKey("data") ? jsonObject.getString("data") : "{}", tClass));
+    } else {
+      response.setBody("");
+    }
+    response.setCode(jsonObject.getStr("code"));
+    response.setMessage(jsonObject.getStr("message"));
+    response.setStatus(jsonObject.has("status") ? jsonObject.getInt("status") : -1);
+    JsonObject dataObj = jsonObject.getObj("data");
+    response.setData(
+        Json.parse(dataObj == null ? "{}" : jsonObject.getObj("data").toString(), tClass));
+    //    }
+    if (logOut != null) {
+      if (res == null) {
+        logOut.out(
+            new LogOut.Req(url, httpRequest.getMethod(), httpRequest.headers(), paramJson),
+            new LogOut.Res(400, new HashMap<>(0), ""));
+      } else {
+        logOut.out(
+            new LogOut.Req(url, httpRequest.getMethod(), httpRequest.headers(), paramJson),
+            new LogOut.Res(res.getStatus(), res.headers(), res.body()));
+      }
     }
     return response;
   }
@@ -119,19 +142,18 @@ public class SignTemplate {
             .method(Method.PUT)
             .header("Content-MD5", Encryption.md5AndBase64(outputStream))
             .header("Content-Type", HeaderConstant.CONTENTTYPE_PDF.value());
-    if (isDev) {
-      System.out.println(request);
-    }
     HttpResponse res = request.body(outputStream.toByteArray()).execute();
-    if (isDev) {
-      System.out.println("Response Body: ");
-      System.out.println(res.body());
-      System.out.println();
+    if (logOut != null) {
+      logOut.out(
+          new LogOut.Req(url, request.getMethod(), request.headers(), ""),
+          new LogOut.Res(res.getStatus(), res.headers(), res.body()));
     }
     if (res.getStatus() != HttpStatus.HTTP_OK) {
+      log.info("esign upload err: {}", res.body());
       return false;
     }
     if (StrUtil.isBlank(res.body())) {
+      log.info("esign upload err: {}", res.body());
       return false;
     }
     return res.body().contains("成功");

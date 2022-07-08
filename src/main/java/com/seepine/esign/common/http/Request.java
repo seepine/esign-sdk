@@ -2,7 +2,9 @@ package com.seepine.esign.common.http;
 
 import cn.hutool.http.Method;
 
-/** @author seepine */
+/**
+ * @author seepine
+ */
 public abstract class Request {
   private String url;
   private Method method;

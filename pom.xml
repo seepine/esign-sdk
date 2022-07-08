@@ -6,7 +6,7 @@
 
     <groupId>com.seepine</groupId>
     <artifactId>esign-sdk</artifactId>
-    <version>1.0.2</version>
+    <version>1.1.0</version>
 
     <name>esign-sdk</name>
     <url>https://github.com/seepine/esign-sdk</url>
@@ -39,6 +39,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
+        <!--        <hutool-version>5.8.0.M2</hutool-version>-->
         <hutool-version>5.7.16</hutool-version>
     </properties>
 
@@ -48,16 +49,24 @@
             <artifactId>lombok</artifactId>
             <version>1.18.22</version>
             <optional>true</optional>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-http</artifactId>
             <version>${hutool-version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>1.2.78</version>
+            <groupId>com.seepine</groupId>
+            <artifactId>json</artifactId>
+            <version>0.1.0</version>
         </dependency>
     </dependencies>
     <build>

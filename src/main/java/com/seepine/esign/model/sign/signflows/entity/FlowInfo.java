@@ -4,7 +4,9 @@ import com.seepine.esign.common.enums.PersonAvailableAuthType;
 import com.seepine.esign.common.enums.WillType;
 import lombok.Data;
 
-/** @author seepine */
+/**
+ * @author seepine
+ */
 @Data
 public class FlowInfo {
   /** 本次签署流程的文件主题名称 */
@@ -19,6 +21,8 @@ public class FlowInfo {
   public FlowInfo(String businessScene, String noticeDeveloperUrl) {
     this.businessScene = businessScene;
     this.flowConfigInfo.setNoticeDeveloperUrl(noticeDeveloperUrl);
+    this.flowConfigInfo.personAvailableAuthTypes =
+        new PersonAvailableAuthType[] {PersonAvailableAuthType.PSN_FACEAUTH_BYURL};
   }
 
   @Data

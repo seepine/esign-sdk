@@ -2,6 +2,7 @@ package com.seepine.esign.model.identity.ocr;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -12,6 +13,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @AllArgsConstructor
+@NoArgsConstructor
 public class OcrIdCardRes {
   /** 业务Id */
   String verifyId;

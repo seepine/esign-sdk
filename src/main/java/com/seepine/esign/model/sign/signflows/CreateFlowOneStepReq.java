@@ -1,6 +1,7 @@
 package com.seepine.esign.model.sign.signflows;
 
 import cn.hutool.http.Method;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.seepine.esign.common.enums.WillType;
 import com.seepine.esign.common.http.Request;
 import com.seepine.esign.model.sign.signflows.entity.Doc;
@@ -20,6 +21,7 @@ import java.util.List;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CreateFlowOneStepReq extends Request {
   FlowInfo flowInfo;
 
