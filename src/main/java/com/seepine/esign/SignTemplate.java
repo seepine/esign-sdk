@@ -4,6 +4,7 @@ import cn.hutool.core.net.url.UrlBuilder;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.seepine.esign.common.enums.ApiEnum;
 import com.seepine.esign.common.enums.HeaderConstant;
 import com.seepine.esign.common.exception.DefineException;
@@ -16,6 +17,7 @@ import com.seepine.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +52,10 @@ public class SignTemplate {
 
   public <T> Response<T> execute(Request request, Class<T> tClass) throws DefineException {
     request.build();
-    String paramJson = Json.toJson(request);
+    String paramJson =
+        ((ObjectNode) Json.parse(Json.toJson(request)))
+            .remove(Arrays.asList("url", "method"))
+            .toString();
     // 对body体做md5摘要
     String contentMd5 = Encryption.doContentMd5(paramJson);
     // get和delete方式请求不能携带body体
