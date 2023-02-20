@@ -83,20 +83,7 @@ public class SignTemplate {
             .body(paramJson);
 
     HttpResponse res = httpRequest.execute();
-
     Response<T> response;
-    //    try {
-    //      if (res == null) {
-    //        throw new Exception();
-    //      }
-    //      response = Json.parse(res.body(), new TypeReference<Response<T>>() {});
-    //      if (response == null) {
-    //        throw new Exception();
-    //      }
-    //      if (response.getData() instanceof LinkedHashMap) {
-    //        throw new Exception("识别成了linkedHashMap");
-    //      }
-    //    } catch (Exception ignore) {
     JsonObject jsonObject = new JsonObject();
     response = new Response<T>() {};
     if (res != null) {
@@ -112,9 +99,7 @@ public class SignTemplate {
     response.setMessage(jsonObject.getStr("message"));
     response.setStatus(jsonObject.has("status") ? jsonObject.getInt("status") : -1);
     JsonObject dataObj = jsonObject.getObj("data");
-    response.setData(
-        Json.parse(dataObj == null ? "{}" : jsonObject.getObj("data").toString(), tClass));
-    //    }
+    response.setData(Json.parse(dataObj == null ? "{}" : dataObj.toString(), tClass));
     if (logOut != null) {
       if (res == null) {
         logOut.out(
