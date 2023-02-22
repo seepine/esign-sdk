@@ -84,22 +84,23 @@ public class SignTemplate {
 
     HttpResponse res = httpRequest.execute();
     Response<T> response;
-    JsonObject jsonObject = new JsonObject();
     response = new Response<T>() {};
     if (res != null) {
+      response.setBody(res.body());
       try {
-        jsonObject = Json.parseObj(res.body());
-        response.setBody(res.body());
+        if (res.body() != null && !res.body().startsWith("Error request")) {
+          JsonObject jsonObject = Json.parseObj(res.body());
+          response.setCode(jsonObject.getStr("code"));
+          response.setMessage(jsonObject.getStr("message"));
+          response.setStatus(jsonObject.has("status") ? jsonObject.getInt("status") : -1);
+          JsonObject dataObj = jsonObject.getObj("data");
+          response.setData(dataObj == null ? null : Json.parse(dataObj.toString(), tClass));
+        }
       } catch (Exception ignore) {
       }
     } else {
       response.setBody("");
     }
-    response.setCode(jsonObject.getStr("code"));
-    response.setMessage(jsonObject.getStr("message"));
-    response.setStatus(jsonObject.has("status") ? jsonObject.getInt("status") : -1);
-    JsonObject dataObj = jsonObject.getObj("data");
-    response.setData(Json.parse(dataObj == null ? "{}" : dataObj.toString(), tClass));
     if (logOut != null) {
       if (res == null) {
         logOut.out(
